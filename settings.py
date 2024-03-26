@@ -5,5 +5,8 @@ class Settings():
         """Инициализирует настройки игры"""
         # Параметры экрана
         self.screen_width = 1366
-        self.screen_height = 710
-        self.bg_color = (12, 9, 36) # rgb
+        self.screen_height = 680
+        self.bg_color = (31, 7, 43) # rgb
+
+        # Настройки корабля
+        self.ship_speed = 1.5
