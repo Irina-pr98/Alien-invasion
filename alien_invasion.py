@@ -8,10 +8,10 @@ from bullet import Bullet
 from alien import Alien
 
 class AlienInvasion():
-    'Класс для управления ресурсами и поведением игры'
+    """Класс для управления ресурсами и поведением игры"""
 
     def __init__(self):
-        '''Инициализирует игру и создает игровые ресурсы'''
+        """Инициализирует игру и создает игровые ресурсы"""
         pygame.init()
         self.settings = Settings()
 
@@ -31,7 +31,7 @@ class AlienInvasion():
         self._create_fleet()
 
     def run_game(self):
-        '''Запуск основного цикла игры'''
+        """Запуск основного цикла игры"""
         while True:
             self._check_events()
             self.ship.update()
@@ -40,15 +40,25 @@ class AlienInvasion():
             self._update_screen()
             
     def _update_bullets(self):
-            """Обновляет позиции снарядов и уничтожает старые снаряды"""
-            # Обновление позиции снарядов
-            self.bullets.update()
+        """Обновляет позиции снарядов и уничтожает старые снаряды"""
+        # Обновление позиции снарядов
+        self.bullets.update()
 
-            # Удаление снарядов, вышедших за край экрана
-            for bullet in self.bullets.copy():
-                if bullet.rect.bottom <= 0:
-                    self.bullets.remove(bullet)
-            # print(len(self.bullets))
+        # Удаление снарядов, вышедших за край экрана
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+        # print(len(self.bullets))
+                    
+        # Проверка попаданий в пришельцев
+        # При обнаружении попадания удалить снаряд и пришельца
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.aliens, True, True)
+            
+        if not self.aliens:
+            # Уничтожение существующих снарядов и создание новго флота
+            self.bullets.empty()
+            self._create_fleet()
                     
     def _update_aliens(self):
         """Проверяет, достиг ли флот края экрана, 
