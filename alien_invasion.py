@@ -1,5 +1,7 @@
 import sys
 from time import sleep
+import json
+from pathlib import Path
 
 import pygame
 
@@ -17,6 +19,7 @@ class AlienInvasion():
     def __init__(self):
         """Инициализирует игру и создает игровые ресурсы"""
         pygame.init()
+        self.clock = pygame.time.Clock()
         self.settings = Settings()
 
         # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -42,6 +45,9 @@ class AlienInvasion():
         # Создание кнопки Play
         self.play_button = Button(self, "Play")
 
+        # Игра запускается в неактивном состоянии
+        self.game_active = False
+
     def run_game(self):
         """Запуск основного цикла игры"""
         while True:
@@ -53,6 +59,7 @@ class AlienInvasion():
                 self._update_aliens()
 
             self._update_screen()
+            self.clock.tick(60)
             
     def _update_bullets(self):
         """Обновляет позиции снарядов и уничтожает старые снаряды"""
@@ -119,25 +126,30 @@ class AlienInvasion():
         """Запускает новую игру при нажатии кнопки Play"""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.stats.game_active:
-            # Сброс игровых настроек
-            self.settings.initialize_dynamic_settings()
+            self.start_game()
+           
+    def start_game(self):
+        """"Начало новой игры"""
+        # Сброс игровых настроек
+        self.settings.initialize_dynamic_settings()
 
-            # Сброс игровой статистики
-            self.stats.reset_stats()
-            self.stats.game_active = True
-            self.sb.prep_score()
-            self.sb.prep_level()
+        # Сброс игровой статистики
+        self.stats.reset_stats()
+        self.stats.game_active = True
+        self.sb.prep_score()
+        self.sb.prep_level()
+        self.sb.prep_ships()
 
-            # Очистка списковпришельце и снарядов
-            self.aliens.empty()
-            self.bullets.empty()
+        # Очистка списковпришельце и снарядов
+        self.aliens.empty()
+        self.bullets.empty()
 
-            # Создание нового флота и размещение корабля в центре
-            self._create_fleet()
-            self.ship.center_ship()
+        # Создание нового флота и размещение корабля в центре
+        self._create_fleet()
+        self.ship.center_ship()
 
-            # Указатель мыши скрывается
-            pygame.mouse.set_visible(False)
+        # Указатель мыши скрывается
+        pygame.mouse.set_visible(False)
 
     def _check_keydown_events(self, event):
         """Реагирует на нажатие клавиш"""
@@ -149,6 +161,8 @@ class AlienInvasion():
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
+        elif event.key == pygame.K_p and not self.game_active:
+            self.start_game()
 
     def _check_keyup_events(self, event):
         """Реагирует на отпускание клавиш"""
@@ -208,8 +222,9 @@ class AlienInvasion():
     def _ship_hit(self):
         """Обрабатывает столкновение корабля с пришельцем"""
         if self.stats.ships_left > 0:
-            # Уменьшение ships_left
+            # Уменьшение ships_left и обновление панели счета
             self.stats.ships_left -= 1
+            self.sb.prep_ships()
 
             # Очистка списков пришельцев и снарядов
             self.aliens.empty()
