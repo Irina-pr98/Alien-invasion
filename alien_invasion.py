@@ -53,7 +53,7 @@ class AlienInvasion():
         while True:
             self._check_events()
 
-            if self.stats.game_active:
+            if self.game_active:
                 self.ship.update()
                 self._update_bullets()
                 self._update_aliens()
@@ -70,8 +70,6 @@ class AlienInvasion():
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
-        # print(len(self.bullets))
-        
         self._check_bullet_alien_collisions()
                     
     def _check_bullet_alien_collisions(self):
@@ -87,14 +85,18 @@ class AlienInvasion():
             self.sb.check_high_score() 
             
         if not self.aliens:
-            # Уничтожение существующих снарядов и создание новго флота
-            self.bullets.empty()
-            self._create_fleet()
-            self.settings.increase_speed()
+            self._start_new_level()
 
-            # Увеличение уровня
-            self.stats.level += 1
-            self.sb.prep_level()
+    def _start_new_level(self):
+        """Начало нового уровня после того, как флот будет очищен"""
+        # Уничтожение существующих снарядов и создание новго флота
+        self.bullets.empty()
+        self._create_fleet()
+        self.settings.increase_speed()
+        
+        # Увеличение уровня
+        self.stats.level += 1
+        self.sb.prep_level()
                     
     def _update_aliens(self):
         """Проверяет, достиг ли флот края экрана, 
@@ -125,20 +127,18 @@ class AlienInvasion():
     def _check_play_button(self, mouse_pos):
         """Запускает новую игру при нажатии кнопки Play"""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
-        if button_clicked and not self.stats.game_active:
-            self.start_game()
+        if button_clicked and not self.game_active:
+            self._start_game()
            
-    def start_game(self):
+    def _start_game(self):
         """"Начало новой игры"""
         # Сброс игровых настроек
         self.settings.initialize_dynamic_settings()
 
         # Сброс игровой статистики
         self.stats.reset_stats()
-        self.stats.game_active = True
-        self.sb.prep_score()
-        self.sb.prep_level()
-        self.sb.prep_ships()
+        self.game_active = True
+        self.sb.prep_images()
 
         # Очистка списковпришельце и снарядов
         self.aliens.empty()
@@ -158,11 +158,11 @@ class AlienInvasion():
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
-            sys.exit()
+            self._close_game()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
         elif event.key == pygame.K_p and not self.game_active:
-            self.start_game()
+            self._start_game()
 
     def _check_keyup_events(self, event):
         """Реагирует на отпускание клавиш"""
@@ -237,7 +237,7 @@ class AlienInvasion():
             # Пауза
             sleep(0.5)
         else:
-            self.stats.game_active = False
+            self.game_active = False
             pygame.mouse.set_visible(True)
 
     def _check_aliens_bottom(self):
@@ -262,11 +262,21 @@ class AlienInvasion():
         self.sb.show_score()
 
         # Кнопка Play отображается в том случае, если игра неактивна
-        if not self.stats.game_active:
+        if not self.game_active:
             self.play_button.draw_button()
 
         # Отображение последнего прорисованного экрана
         pygame.display.flip()
+
+    def _close_game(self):
+        """Сохранение рекорда и выход из игры"""
+        saved_high_score = self.stats.get_saved_high_score()
+        if self.stats.high_score > saved_high_score:
+            path = Path('high_score.json')
+            contents = json.dumps(self.stats.high_score)
+            path.write_text(contents)
+
+        sys.exit()
 
 if __name__ == '__main__':
     # Создание экземпляра и запуск игры
