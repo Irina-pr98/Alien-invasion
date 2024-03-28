@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pygame
+import asyncio
 
 from settings import Settings
 from game_stats import GameStats
