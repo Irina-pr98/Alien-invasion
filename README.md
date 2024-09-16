@@ -20,18 +20,18 @@ Alien Invasion - это игра, в которой игрок управляе�
 
 1. Клонируйте репозиторий
    ```sh
-   $ git clone https://github.com/Irina-pr98/Alien-invasion.git
-   $ cd Alien-Invasion
+   git clone https://github.com/Irina-pr98/Alien-invasion.git
+   cd Alien-Invasion
    ```
 
 2. Установите зависимости
     ```sh
-    $ pip install pygame
+    pip install pygame
     ```
 
 3. Запустите игру
    ```sh
-   $ python alien_invasion.py
+   python alien_invasion.py
    ```
 
 ## Структура проекта
